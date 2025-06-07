@@ -100,9 +100,9 @@ def generate_campaign_summary(data, api_key):
         model = genai.GenerativeModel('gemini-2.0-flash')
 
         # Siapkan data agregat untuk prompt
-        dominant_sentiment = data['Sentiment'].mode()[0] if not data['Sentiment'].empty else 'N/A'
-        top_platform = data.groupby('Platform')['Engagements'].sum().idxmax() if not data.empty else 'N/A'
-        top_platform_engagements = data.groupby('Platform')['Engagements'].sum().max() if not data.empty else 0
+        dominant_sentiment = data['Sentiment'].mode()[0] if 'Sentiment' in data.columns and not data['Sentiment'].empty else 'N/A'
+        top_platform = data.groupby('Platform')['Engagements'].sum().idxmax() if 'Platform' in data.columns and not data.empty else 'N/A'
+        top_platform_engagements = data.groupby('Platform')['Engagements'].sum().max() if 'Platform' in data.columns and not data.empty else 0
         
         # Tren keseluruhan
         trend = 'stabil'
@@ -117,9 +117,9 @@ def generate_campaign_summary(data, api_key):
 
         start_date = data['Date'].min().strftime('%Y-%m-%d') if not data.empty else 'N/A'
         end_date = data['Date'].max().strftime('%Y-%m-%d') if not data.empty else 'N/A'
-        dominant_media_type = data['Media Type'].mode()[0] if not data['Media Type'].empty else 'N/A'
-        top_location = data.groupby('Location')['Engagements'].sum().idxmax() if not data.empty else 'N/A'
-        top_location_engagements = data.groupby('Location')['Engagements'].sum().max() if not data.empty else 0
+        dominant_media_type = data['Media Type'].mode()[0] if 'Media Type' in data.columns and not data['Media Type'].empty else 'N/A'
+        top_location = data.groupby('Location')['Engagements'].sum().idxmax() if 'Location' in data.columns and not data.empty else 'N/A'
+        top_location_engagements = data.groupby('Location')['Engagements'].sum().max() if 'Location' in data.columns and not data.empty else 0
         
         prompt = f"""
         Berdasarkan data intelijen media dan wawasan berikut, berikan ringkasan strategi kampanye yang ringkas dalam format poin-poin (tindakan dan rekomendasi utama).
@@ -240,39 +240,41 @@ else:
 
     with col1:
         # 1. Analisis Sentimen
-        st.subheader("😊 Analisis Sentimen")
-        sentiment_data = df_filtered['Sentiment'].value_counts().reset_index()
-        sentiment_data.columns = ['Sentiment', 'Jumlah']
-        fig_sentiment = px.pie(
-            sentiment_data,
-            names='Sentiment',
-            values='Jumlah',
-            color_discrete_sequence=px.colors.qualitative.Pastel1, # <-- FIX HERE
-            hole=0.3
-        )
-        fig_sentiment.update_layout(legend_title_text='Sentimen')
-        st.plotly_chart(fig_sentiment, use_container_width=True)
-        with st.container(border=True):
-            st.markdown("<div class='key-insights'><b>Wawasan Utama:</b> Sentimen dominan memberikan gambaran umum tentang persepsi publik terhadap kampanye.</div>", unsafe_allow_html=True)
-
+        # FIX: Tambahkan pengecekan jika kolom 'Sentiment' ada
+        if 'Sentiment' in df_filtered.columns:
+            st.subheader("😊 Analisis Sentimen")
+            sentiment_data = df_filtered['Sentiment'].value_counts().reset_index()
+            sentiment_data.columns = ['Sentiment', 'Jumlah']
+            fig_sentiment = px.pie(
+                sentiment_data,
+                names='Sentiment',
+                values='Jumlah',
+                color_discrete_sequence=px.colors.qualitative.Pastel1,
+                hole=0.3
+            )
+            fig_sentiment.update_layout(legend_title_text='Sentimen')
+            st.plotly_chart(fig_sentiment, use_container_width=True)
+            with st.container(border=True):
+                st.markdown("<div class='key-insights'><b>Wawasan Utama:</b> Sentimen dominan memberikan gambaran umum tentang persepsi publik terhadap kampanye.</div>", unsafe_allow_html=True)
 
     with col2:
         # 2. Kombinasi Jenis Media
-        st.subheader("📰 Kombinasi Jenis Media")
-        media_type_data = df_filtered['Media Type'].value_counts().reset_index()
-        media_type_data.columns = ['Media Type', 'Jumlah']
-        fig_media_type = px.pie(
-            media_type_data,
-            names='Media Type',
-            values='Jumlah',
-            color_discrete_sequence=px.colors.qualitative.Pastel2, # <-- FIX HERE
-            hole=0.3
-        )
-        fig_media_type.update_layout(legend_title_text='Jenis Media')
-        st.plotly_chart(fig_media_type, use_container_width=True)
-        with st.container(border=True):
-             st.markdown("<div class='key-insights'><b>Wawasan Utama:</b> Menganalisis jenis media yang paling banyak digunakan dapat menginformasikan strategi konten di masa depan.</div>", unsafe_allow_html=True)
-
+        # FIX: Tambahkan pengecekan jika kolom 'Media Type' ada
+        if 'Media Type' in df_filtered.columns:
+            st.subheader("📰 Kombinasi Jenis Media")
+            media_type_data = df_filtered['Media Type'].value_counts().reset_index()
+            media_type_data.columns = ['Media Type', 'Jumlah']
+            fig_media_type = px.pie(
+                media_type_data,
+                names='Media Type',
+                values='Jumlah',
+                color_discrete_sequence=px.colors.qualitative.Pastel2,
+                hole=0.3
+            )
+            fig_media_type.update_layout(legend_title_text='Jenis Media')
+            st.plotly_chart(fig_media_type, use_container_width=True)
+            with st.container(border=True):
+                 st.markdown("<div class='key-insights'><b>Wawasan Utama:</b> Menganalisis jenis media yang paling banyak digunakan dapat menginformasikan strategi konten di masa depan.</div>", unsafe_allow_html=True)
 
     st.markdown("---")
     
@@ -291,42 +293,41 @@ else:
     with st.container(border=True):
         st.markdown("<div class='key-insights'><b>Wawasan Utama:</b> Puncak keterlibatan sering kali berkorelasi dengan peristiwa atau postingan kampanye tertentu. Analisis tren membantu mengidentifikasi apa yang berhasil.</div>", unsafe_allow_html=True)
 
-
     st.markdown("---")
     
     col3, col4 = st.columns(2)
 
     with col3:
         # 4. Keterlibatan per Platform
-        st.subheader("📊 Keterlibatan per Platform")
-        platform_engagement = df_filtered.groupby('Platform')['Engagements'].sum().sort_values(ascending=False).reset_index()
-        fig_platform = px.bar(
-            platform_engagement,
-            x='Platform',
-            y='Engagements',
-            color='Platform',
-            color_discrete_sequence=px.colors.qualitative.Pastel
-        )
-        st.plotly_chart(fig_platform, use_container_width=True)
-        with st.container(border=True):
-            st.markdown("<div class='key-insights'><b>Wawasan Utama:</b> Mengidentifikasi platform dengan kinerja terbaik sangat penting untuk alokasi sumber daya dan fokus strategis.</div>", unsafe_allow_html=True)
-
+        # FIX: Tambahkan pengecekan jika kolom 'Platform' ada
+        if 'Platform' in df_filtered.columns:
+            st.subheader("📊 Keterlibatan per Platform")
+            platform_engagement = df_filtered.groupby('Platform')['Engagements'].sum().sort_values(ascending=False).reset_index()
+            fig_platform = px.bar(
+                platform_engagement,
+                x='Platform',
+                y='Engagements',
+                color='Platform',
+                color_discrete_sequence=px.colors.qualitative.Pastel
+            )
+            st.plotly_chart(fig_platform, use_container_width=True)
+            with st.container(border=True):
+                st.markdown("<div class='key-insights'><b>Wawasan Utama:</b> Mengidentifikasi platform dengan kinerja terbaik sangat penting untuk alokasi sumber daya dan fokus strategis.</div>", unsafe_allow_html=True)
 
     with col4:
         # 5. 5 Lokasi Teratas berdasarkan Keterlibatan
-        st.subheader("📍 5 Lokasi Teratas")
-        location_engagement = df_filtered.groupby('Location')['Engagements'].sum().nlargest(5).sort_values(ascending=True).reset_index()
-        fig_location = px.bar(
-            location_engagement,
-            y='Location',
-            x='Engagements',
-            orientation='h',
-            color='Location',
-            color_discrete_sequence=px.colors.qualitative.Set3
-        )
-        st.plotly_chart(fig_location, use_container_width=True)
-        with st.container(border=True):
-            st.markdown("<div class='key-insights'><b>Wawasan Utama:</b> Menargetkan lokasi dengan keterlibatan tinggi dapat memaksimalkan jangkauan dan dampak kampanye.</div>", unsafe_allow_html=True)
-
-        with st.container(border=True):
-            st.markdown("<div class='key-insights'><b>Wawasan Utama:</b> Menargetkan lokasi dengan keterlibatan tinggi dapat memaksimalkan jangkauan dan dampak kampanye.</div>", unsafe_allow_html=True)
+        # FIX: Tambahkan pengecekan jika kolom 'Location' ada
+        if 'Location' in df_filtered.columns:
+            st.subheader("📍 5 Lokasi Teratas")
+            location_engagement = df_filtered.groupby('Location')['Engagements'].sum().nlargest(5).sort_values(ascending=True).reset_index()
+            fig_location = px.bar(
+                location_engagement,
+                y='Location',
+                x='Engagements',
+                orientation='h',
+                color='Location',
+                color_discrete_sequence=px.colors.qualitative.Set3
+            )
+            st.plotly_chart(fig_location, use_container_width=True)
+            with st.container(border=True):
+                st.markdown("<div class='key-insights'><b>Wawasan Utama:</b> Menargetkan lokasi dengan keterlibatan tinggi dapat memaksimalkan jangkauan dan dampak kampanye.</div>", unsafe_allow_html=True)
