@@ -247,7 +247,7 @@ else:
             sentiment_data,
             names='Sentiment',
             values='Jumlah',
-            color_discrete_sequence=px.colors.sequential.Pastel1,
+            color_discrete_sequence=px.colors.qualitative.Pastel1, # <-- FIX HERE
             hole=0.3
         )
         fig_sentiment.update_layout(legend_title_text='Sentimen')
@@ -265,7 +265,7 @@ else:
             media_type_data,
             names='Media Type',
             values='Jumlah',
-            color_discrete_sequence=px.colors.sequential.Pastel2,
+            color_discrete_sequence=px.colors.qualitative.Pastel2, # <-- FIX HERE
             hole=0.3
         )
         fig_media_type.update_layout(legend_title_text='Jenis Media')
@@ -325,5 +325,8 @@ else:
             color_discrete_sequence=px.colors.qualitative.Set3
         )
         st.plotly_chart(fig_location, use_container_width=True)
+        with st.container(border=True):
+            st.markdown("<div class='key-insights'><b>Wawasan Utama:</b> Menargetkan lokasi dengan keterlibatan tinggi dapat memaksimalkan jangkauan dan dampak kampanye.</div>", unsafe_allow_html=True)
+
         with st.container(border=True):
             st.markdown("<div class='key-insights'><b>Wawasan Utama:</b> Menargetkan lokasi dengan keterlibatan tinggi dapat memaksimalkan jangkauan dan dampak kampanye.</div>", unsafe_allow_html=True)
